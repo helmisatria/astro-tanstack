@@ -1,6 +1,6 @@
 import { FileRoute } from "@tanstack/react-router";
 
-export const Route = new FileRoute('/about').createRoute({
+export const Route = new FileRoute("/about").createRoute({
   beforeLoad: () => ({
     title: "About Page",
   }),
@@ -14,5 +14,6 @@ export const Route = new FileRoute('/about').createRoute({
 function AboutPage() {
   const loaderData = Route.useLoaderData();
   console.log("loaderData -->", loaderData);
+
   return <div className="p-2">Hello from AboutPage!</div>;
 }

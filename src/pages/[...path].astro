@@ -33,16 +33,17 @@ router.update({ history: memoryHistory });
 await router.load();
 
 const getMatches = (path: string) => {
+  // remove trailing slash but exclude root path
+  const cleanPath = path === "/" ? path : path.replace(/\/$/, "");
+
   const matches = router.state.matches.filter(
-    (match) => match.pathname === path
+    (match) => match.pathname === cleanPath
   );
-  if (!matches || matches.length === 0) {
-    throw new Error(`No route found for path: ${path}`);
-  }
+
   return matches;
 };
 
-const { title = "Default Title" } = getMatches(url)[0].context;
+const { title = "Default Title" } = getMatches(url)?.[0]?.context;
 ---
 
 <html lang="en">
