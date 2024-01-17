@@ -1,24 +1,57 @@
 ---
-import type { GetStaticPaths } from "astro";
-import { App } from "../app";
+import type { GetStaticPaths, GetStaticPathsItem } from "astro";
 import { routeTree } from "../routeTree.gen";
+import { createMemoryHistory } from "@tanstack/react-router";
+import { StartServer } from "@tanstack/react-router-server/server";
+import { router } from "../app";
 
+/**
+ * Generate static paths for all routes in the app.
+ */
 export const getStaticPaths = (() => {
   const paths = routeTree.children?.map((child) => child.path) ?? [];
-  const staticPaths = paths.map((path) => ({ params: { path } }));
+  const staticPaths: GetStaticPathsItem[] = paths.map((path) => ({
+    params: { path },
+  }));
 
-  const indexPath = { params: { path: undefined } };
+  const indexPath = { params: { path: undefined } } as GetStaticPathsItem;
   return [indexPath, ...staticPaths];
 }) satisfies GetStaticPaths;
+
+const fullUrl = new URL(Astro.request.url);
+const url = fullUrl.href.replace(fullUrl.origin, "");
+
+const memoryHistory = createMemoryHistory({
+  initialEntries: [url],
+});
+
+router.update({ history: memoryHistory });
+
+/**
+ * Load the route data for the current page (SSR purposes)
+ */
+await router.load();
+
+const getMatches = (path: string) => {
+  const matches = router.state.matches.filter(
+    (match) => match.pathname === path
+  );
+  if (!matches || matches.length === 0) {
+    throw new Error(`No route found for path: ${path}`);
+  }
+  return matches;
+};
+
+const { title = "Default Title" } = getMatches(url)[0].context;
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Document</title>
+    <title>{title}</title>
   </head>
   <body>
-    <App client:load />
+    <StartServer router={router} />
   </body>
 </html>
