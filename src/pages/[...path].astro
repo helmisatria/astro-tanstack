@@ -1,0 +1,24 @@
+---
+import type { GetStaticPaths } from "astro";
+import { App } from "../app";
+import { routeTree } from "../routeTree.gen";
+
+export const getStaticPaths = (() => {
+  const paths = routeTree.children?.map((child) => child.path) ?? [];
+  const staticPaths = paths.map((path) => ({ params: { path } }));
+
+  const indexPath = { params: { path: undefined } };
+  return [indexPath, ...staticPaths];
+}) satisfies GetStaticPaths;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Document</title>
+  </head>
+  <body>
+    <App client:load />
+  </body>
+</html>
